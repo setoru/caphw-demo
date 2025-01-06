@@ -1,8 +1,7 @@
-package caphw_demo
+package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
@@ -14,8 +13,8 @@ import (
 	elbMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/elb/v3/model"
 	ims "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ims/v2"
 	imsMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ims/v2/model"
-	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3"
-	vpcMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v3/model"
+	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
+	vpcMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2/model"
 )
 
 type Client interface {
@@ -28,10 +27,6 @@ type Client interface {
 	CreateServerGroup(request *ecsMdl.CreateServerGroupRequest) (*ecsMdl.CreateServerGroupResponse, error)
 	DeleteServerGroup(request *ecsMdl.DeleteServerGroupRequest) (*ecsMdl.DeleteServerGroupResponse, error)
 	BatchCreateServerTags(request *ecsMdl.BatchCreateServerTagsRequest) (*ecsMdl.BatchCreateServerTagsResponse, error)
-	NovaAssociateSecurityGroup(request *ecsMdl.NovaAssociateSecurityGroupRequest) (*ecsMdl.NovaAssociateSecurityGroupResponse, error)
-	NovaDisassociateSecurityGroup(request *ecsMdl.NovaDisassociateSecurityGroupRequest) (*ecsMdl.NovaDisassociateSecurityGroupResponse, error)
-	NovaListAvailabilityZones(request *ecsMdl.NovaListAvailabilityZonesRequest) (*ecsMdl.NovaListAvailabilityZonesResponse, error)
-	NovaListServerSecurityGroups(request *ecsMdl.NovaListServerSecurityGroupsRequest) (*ecsMdl.NovaListServerSecurityGroupsResponse, error)
 	BatchStopServers(request *ecsMdl.BatchStopServersRequest) (*ecsMdl.BatchStopServersResponse, error)
 	ListFlavors(request *ecsMdl.ListFlavorsRequest) (*ecsMdl.ListFlavorsResponse, error)
 	//VPC
@@ -39,6 +34,8 @@ type Client interface {
 	DeleteVpc(request *vpcMdl.DeleteVpcRequest) (*vpcMdl.DeleteVpcResponse, error)
 	ShowVpc(request *vpcMdl.ShowVpcRequest) (*vpcMdl.ShowVpcResponse, error)
 	ListSecurityGroups(request *vpcMdl.ListSecurityGroupsRequest) (*vpcMdl.ListSecurityGroupsResponse, error)
+	CreateSecurityGroup(request *vpcMdl.CreateSecurityGroupRequest) (*vpcMdl.CreateSecurityGroupResponse, error)
+	CreateSubnet(request *vpcMdl.CreateSubnetRequest) (*vpcMdl.CreateSubnetResponse, error)
 	//ELB
 	ShowLoadBalancer(request *elbMdl.ShowLoadBalancerRequest) (*elbMdl.ShowLoadBalancerResponse, error)
 	CreateLoadBalancer(request *elbMdl.CreateLoadBalancerRequest) (*elbMdl.CreateLoadBalancerResponse, error)
@@ -72,22 +69,6 @@ func (client *HuaweiCloudClient) BatchCreateServerTags(request *ecsMdl.BatchCrea
 	return client.EcsClient.BatchCreateServerTags(request)
 }
 
-func (client *HuaweiCloudClient) NovaAssociateSecurityGroup(request *ecsMdl.NovaAssociateSecurityGroupRequest) (*ecsMdl.NovaAssociateSecurityGroupResponse, error) {
-	return client.EcsClient.NovaAssociateSecurityGroup(request)
-}
-
-func (client *HuaweiCloudClient) NovaDisassociateSecurityGroup(request *ecsMdl.NovaDisassociateSecurityGroupRequest) (*ecsMdl.NovaDisassociateSecurityGroupResponse, error) {
-	return client.EcsClient.NovaDisassociateSecurityGroup(request)
-}
-
-func (client *HuaweiCloudClient) NovaListAvailabilityZones(request *ecsMdl.NovaListAvailabilityZonesRequest) (*ecsMdl.NovaListAvailabilityZonesResponse, error) {
-	return client.EcsClient.NovaListAvailabilityZones(request)
-}
-
-func (client *HuaweiCloudClient) NovaListServerSecurityGroups(request *ecsMdl.NovaListServerSecurityGroupsRequest) (*ecsMdl.NovaListServerSecurityGroupsResponse, error) {
-	return client.EcsClient.NovaListServerSecurityGroups(request)
-}
-
 func (client *HuaweiCloudClient) CreateVpc(request *vpcMdl.CreateVpcRequest) (*vpcMdl.CreateVpcResponse, error) {
 	return client.VpcClient.CreateVpc(request)
 }
@@ -98,6 +79,14 @@ func (client *HuaweiCloudClient) DeleteVpc(request *vpcMdl.DeleteVpcRequest) (*v
 
 func (client *HuaweiCloudClient) ShowVpc(request *vpcMdl.ShowVpcRequest) (*vpcMdl.ShowVpcResponse, error) {
 	return client.VpcClient.ShowVpc(request)
+}
+
+func (client *HuaweiCloudClient) CreateSecurityGroup(request *vpcMdl.CreateSecurityGroupRequest) (*vpcMdl.CreateSecurityGroupResponse, error) {
+	return client.VpcClient.CreateSecurityGroup(request)
+}
+
+func (client *HuaweiCloudClient) CreateSubnet(request *vpcMdl.CreateSubnetRequest) (*vpcMdl.CreateSubnetResponse, error) {
+	return client.VpcClient.CreateSubnet(request)
 }
 
 func (client *HuaweiCloudClient) ShowLoadBalancer(request *elbMdl.ShowLoadBalancerRequest) (*elbMdl.ShowLoadBalancerResponse, error) {
@@ -161,7 +150,7 @@ func GetHuaweiClient() (Client, error) {
 		WithSk(sk).
 		SafeBuild()
 	if err != nil {
-		log.Print(err)
+		return nil, err
 	}
 
 	ecsRegion := reg.NewRegion(region, fmt.Sprintf("https://ecs.%s.myhuaweicloud.com", region))
@@ -170,9 +159,6 @@ func GetHuaweiClient() (Client, error) {
 		WithCredential(credential).
 		WithHttpConfig(config.DefaultHttpConfig()).
 		SafeBuild()
-	if err != nil {
-		log.Print(err)
-	}
 	ecsClient := ecs.NewEcsClient(ecsBuild)
 
 	vpcRegion := reg.NewRegion(region, fmt.Sprintf("https://vpc.%s.myhuaweicloud.com", region))
@@ -197,6 +183,9 @@ func GetHuaweiClient() (Client, error) {
 		WithCredential(credential).
 		WithHttpConfig(config.DefaultHttpConfig()).
 		SafeBuild()
+	if err != nil {
+		return nil, err
+	}
 	imsClient := ims.NewImsClient(imsBuild)
 
 	return &HuaweiCloudClient{
