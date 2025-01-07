@@ -11,5 +11,5 @@ export region = your_region
 ### Run
 
 ```shell
-go run m
+go run main.go
 ```
