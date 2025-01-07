@@ -18,3 +18,5 @@ rootVolume:
   volumeType: "GPSSD"
 dataVolumes:
   - volumeType: "GPSSD"
+loadBalancer:
+  size: 100

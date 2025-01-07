@@ -19,7 +19,7 @@ type Config struct {
 	Tags                 []HuaweiTag            `json:"tags,omitempty"`
 	RootVolume           RootVolumeProperties   `json:"rootVolume,omitempty"`
 	DataVolumes          []DataVolumeProperties `json:"dataVolumes,omitempty"`
-	ElbMembers           []HuaweiElbMembers     `json:"elbMembers,omitempty"`
+	LoadBalancer         LoadBalancer           `json:"loadBalancer,omitempty"`
 	Charging             Charging               `json:"charging,omitempty"`
 	AvailabilityZone     string                 `json:"availabilityZone,omitempty"`
 	BatchCreateInMultiAz bool                   `json:"batchCreateInMultiAz,omitempty"`
@@ -91,6 +91,13 @@ type HuaweiVpc struct {
 	Name                string  `json:"name,omitempty"`
 	Cidr                string  `json:"cidr,omitempty"`
 	EnterpriseProjectId *string `json:"enterpriseProjectId,omitempty"`
+}
+
+type LoadBalancer struct {
+	Name         string `json:"name,omitempty"`
+	Size         int32  `json:"size,omitempty"`
+	ChargingMode string `json:"chargingMode,omitempty"`
+	ShareType    string `json:"shareType,omitempty"`
 }
 
 var configFile = flag.String("f", "config.yaml", "the config file")

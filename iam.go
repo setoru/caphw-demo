@@ -42,6 +42,9 @@ type Client interface {
 	DeleteLoadBalancer(request *elbMdl.DeleteLoadBalancerRequest) (*elbMdl.DeleteLoadBalancerResponse, error)
 	BatchCreateMembers(request *elbMdl.BatchCreateMembersRequest) (*elbMdl.BatchCreateMembersResponse, error)
 	BatchDeleteMembers(request *elbMdl.BatchDeleteMembersRequest) (*elbMdl.BatchDeleteMembersResponse, error)
+	ListAvailabilityZones(request *elbMdl.ListAvailabilityZonesRequest) (*elbMdl.ListAvailabilityZonesResponse, error)
+	CreateListener(request *elbMdl.CreateListenerRequest) (*elbMdl.CreateListenerResponse, error)
+	CreatePool(request *elbMdl.CreatePoolRequest) (*elbMdl.CreatePoolResponse, error)
 	//IMS
 	ListImages(request *imsMdl.ListImagesRequest) (*imsMdl.ListImagesResponse, error)
 }
@@ -107,6 +110,18 @@ func (client *HuaweiCloudClient) BatchCreateMembers(request *elbMdl.BatchCreateM
 
 func (client HuaweiCloudClient) BatchDeleteMembers(request *elbMdl.BatchDeleteMembersRequest) (*elbMdl.BatchDeleteMembersResponse, error) {
 	return client.ElbClient.BatchDeleteMembers(request)
+}
+
+func (client HuaweiCloudClient) ListAvailabilityZones(request *elbMdl.ListAvailabilityZonesRequest) (*elbMdl.ListAvailabilityZonesResponse, error) {
+	return client.ElbClient.ListAvailabilityZones(request)
+}
+
+func (client HuaweiCloudClient) CreateListener(request *elbMdl.CreateListenerRequest) (*elbMdl.CreateListenerResponse, error) {
+	return client.ElbClient.CreateListener(request)
+}
+
+func (client HuaweiCloudClient) CreatePool(request *elbMdl.CreatePoolRequest) (*elbMdl.CreatePoolResponse, error) {
+	return client.ElbClient.CreatePool(request)
 }
 
 func (client *HuaweiCloudClient) CreateServers(request *ecsMdl.CreateServersRequest) (*ecsMdl.CreateServersResponse, error) {

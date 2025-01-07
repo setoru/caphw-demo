@@ -87,6 +87,7 @@ func CreateECS(client Client, config *Config, vpcId, networkId string, securityG
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("create ecs success")
 	return instance, nil
 }
 
@@ -240,12 +241,10 @@ func buildTagList(config *Config) *[]ecsMdl.PrePaidServerTag {
 	return removeDuplicatedTags(rawTagList)
 }
 
-// Scan machine tags, and return a deduped tags list. The first found value gets precedence.
 func removeDuplicatedTags(tags []ecsMdl.PrePaidServerTag) *[]ecsMdl.PrePaidServerTag {
 	m := make(map[string]bool)
 	result := make([]ecsMdl.PrePaidServerTag, 0)
 
-	// look for duplicates
 	for _, entry := range tags {
 		if _, value := m[entry.Key]; !value {
 			m[entry.Key] = true
@@ -255,7 +254,6 @@ func removeDuplicatedTags(tags []ecsMdl.PrePaidServerTag) *[]ecsMdl.PrePaidServe
 	return &result
 }
 
-// waitForInstancesStatus waits for instances to given status when instance.NotFound wait until timeout
 func waitForInstancesStatus(client Client, publicIP bool, instanceIds []string, instanceStatus string, timeout int) ([]*ecsMdl.ServerDetail, error) {
 	if timeout <= 0 {
 		timeout = InstanceDefaultTimeout
@@ -319,15 +317,13 @@ func waitForInstancesStatus(client Client, publicIP bool, instanceIds []string, 
 	return result.([]*ecsMdl.ServerDetail), nil
 }
 
-// WaitForResult wait func
 func WaitForResult(name string, predicate func() (bool, interface{}, error), returnWhenError bool, delay int, timeout int) (interface{}, error) {
 	endTime := time.Now().Add(time.Duration(timeout) * time.Second)
 	delaySecond := time.Duration(delay) * time.Second
 	for {
-		// Execute the function
 		satisfied, result, err := predicate()
 		if err != nil {
-			log.Print(fmt.Sprintf("%s\nInvoke func: %++s\n error: %++v", name, "predicate func() (bool, error)", err))
+			log.Print(fmt.Sprintf("%s Invoke func: %++s error: %++v", name, "predicate func() (bool, error)", err))
 			if returnWhenError {
 				return result, err
 			}
@@ -335,9 +331,8 @@ func WaitForResult(name string, predicate func() (bool, interface{}, error), ret
 		if satisfied {
 			return result, nil
 		}
-		// Sleep
 		time.Sleep(delaySecond)
-		// If a timeout is set, and that's been exceeded, shut it down
+
 		if timeout >= 0 && time.Now().After(endTime) {
 			return nil, fmt.Errorf("wait for %s timeout", name)
 		}

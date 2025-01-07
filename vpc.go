@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2/model"
 )
 
@@ -16,6 +18,7 @@ func CreateVpc(client Client, config *Config) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("create vpc success")
 	return response.Vpc.Id, nil
 }
 
@@ -34,6 +37,7 @@ func CreateSecurityGroup(client Client, config *Config) ([]string, error) {
 		}
 		securityGroupIDs = append(securityGroupIDs, response.SecurityGroup.Id)
 	}
+	fmt.Println("create security group success")
 	return securityGroupIDs, nil
 }
 
@@ -66,5 +70,6 @@ func CreateSubnet(client Client, config *Config, vpcId string) (string, string, 
 	if err != nil {
 		return "", "", err
 	}
+	fmt.Println("create subnet success")
 	return response.Subnet.NeutronNetworkId, response.Subnet.NeutronSubnetId, nil
 }
