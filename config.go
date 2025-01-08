@@ -15,7 +15,8 @@ type Config struct {
 	RegionId             string                 `json:"regionId,omitempty"`
 	ImageId              string                 `json:"imageId,omitempty"`
 	SecurityGroups       []SecurityGroup        `json:"securityGroups,omitempty"`
-	PublicIP             bool                   `json:"publicIp,omitempty"`
+	PublicIp             bool                   `json:"publicIp,omitempty"`
+	PublicIpSpec         PublicIP               `json:"publicIpSpec,omitempty"`
 	Tags                 []HuaweiTag            `json:"tags,omitempty"`
 	RootVolume           RootVolumeProperties   `json:"rootVolume,omitempty"`
 	DataVolumes          []DataVolumeProperties `json:"dataVolumes,omitempty"`
@@ -98,6 +99,14 @@ type LoadBalancer struct {
 	Size         int32  `json:"size,omitempty"`
 	ChargingMode string `json:"chargingMode,omitempty"`
 	ShareType    string `json:"shareType,omitempty"`
+}
+
+type PublicIP struct {
+	IpType     string `json:"ipType,omitempty"`
+	Size       int32  `json:"size,omitempty"`
+	Bandwidth  string `json:"bandwidth,omitempty"`
+	ShareType  string `json:"shareType,omitempty"`
+	ChargeMode string `json:"chargeMode,omitempty"`
 }
 
 var configFile = flag.String("f", "config.yaml", "the config file")

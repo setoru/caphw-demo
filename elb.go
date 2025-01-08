@@ -157,7 +157,7 @@ func GetLoadBalancerChargeMode(chargeMode string) elbMdl.CreateLoadBalancerBandw
 	case "traffic":
 		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().TRAFFIC
 	case "bandwidth":
-		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().BANDWIdTH
+		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().BANDWIDTH
 	default:
 		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().TRAFFIC
 	}

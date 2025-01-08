@@ -40,14 +40,17 @@ func CreateEcs(client Client, config *Config, vpcId, networkId string, securityG
 	}
 	request.Body.Server.SecurityGroups = &securityGroups
 
-	if config.PublicIP {
-		var size int32 = 100
-		mode := "traffic"
-		publicip := ecsMdl.PrePaidServerPublicip{Eip: &ecsMdl.PrePaidServerEip{}}
-		publicip.Eip.Iptype = "5_bgp"
-		publicip.Eip.Bandwidth = &ecsMdl.PrePaidServerEipBandwidth{Size: &size, Sharetype: ecsMdl.GetPrePaidServerEipBandwidthSharetypeEnum().PER, Chargemode: &mode}
-
-		request.Body.Server.Publicip = &publicip
+	if config.PublicIp {
+		publicIp := ecsMdl.PrePaidServerPublicip{}
+		publicIp.Eip = &ecsMdl.PrePaidServerEip{
+			Iptype: config.PublicIpSpec.IpType,
+			Bandwidth: &ecsMdl.PrePaidServerEipBandwidth{
+				Size:       &config.PublicIpSpec.Size,
+				Sharetype:  getPublicIpShareType(config.PublicIpSpec.ShareType),
+				Chargemode: &config.PublicIpSpec.ChargeMode,
+			},
+		}
+		request.Body.Server.Publicip = &publicIp
 	}
 
 	request.Body.Server.ServerTags = buildTagList(config)
@@ -84,7 +87,7 @@ func CreateEcs(client Client, config *Config, vpcId, networkId string, securityG
 	// Sleep
 	time.Sleep(5 * time.Second)
 
-	instance, err := waitForInstancesStatus(client, config.PublicIP, *response.ServerIds, ECSInstanceStatusRunning, InstanceDefaultTimeout)
+	instance, err := waitForInstancesStatus(client, config.PublicIp, *response.ServerIds, ECSInstanceStatusRunning, InstanceDefaultTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -401,4 +404,17 @@ func describeInstances(client Client, instanceIds []string) ([]ecsMdl.ServerDeta
 		return nil, err
 	}
 	return *response.Servers, nil
+}
+
+func getPublicIpShareType(shareType string) ecsMdl.PrePaidServerEipBandwidthSharetype {
+	var shareTypeEnum ecsMdl.PrePaidServerEipBandwidthSharetype
+	switch shareType {
+	case "per":
+		shareTypeEnum = ecsMdl.GetPrePaidServerEipBandwidthSharetypeEnum().PER
+	case "whole":
+		shareTypeEnum = ecsMdl.GetPrePaidServerEipBandwidthSharetypeEnum().WHOLE
+	default:
+		shareTypeEnum = ecsMdl.GetPrePaidServerEipBandwidthSharetypeEnum().PER
+	}
+	return shareTypeEnum
 }
