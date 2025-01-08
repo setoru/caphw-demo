@@ -7,15 +7,15 @@ import (
 	elbMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/elb/v3/model"
 )
 
-func AddServerToElb(client Client, subnetIpv4Id string, elbMembers []HuaweiElbMembers, servers []*ecsMdl.ServerDetail) (err error) {
-	for _, member := range elbMembers {
+func AddServerToElb(client Client, subnetId string, pools []HuaweiElbPool, servers []*ecsMdl.ServerDetail) (err error) {
+	for _, pool := range pools {
 		createMembersRequest := &elbMdl.BatchCreateMembersRequest{Body: &elbMdl.BatchCreateMembersRequestBody{Members: make([]elbMdl.BatchCreateMembersOption, 0)}}
 		for _, server := range servers {
 			for _, addresses := range server.Addresses {
 				for _, address := range addresses {
 					if *address.OSEXTIPStype == ecsMdl.GetServerAddressOSEXTIPStypeEnum().FIXED {
-						createMembersRequest.PoolId = member.Id
-						createMember := elbMdl.BatchCreateMembersOption{Address: address.Addr, ProtocolPort: member.Port, SubnetCidrId: &subnetIpv4Id}
+						createMembersRequest.PoolId = pool.Id
+						createMember := elbMdl.BatchCreateMembersOption{Address: address.Addr, ProtocolPort: pool.Port, SubnetCidrId: &subnetId}
 						createMembersRequest.Body.Members = append(createMembersRequest.Body.Members, createMember)
 					}
 				}
@@ -29,16 +29,16 @@ func AddServerToElb(client Client, subnetIpv4Id string, elbMembers []HuaweiElbMe
 	return
 }
 
-func DeleteServerFromElb(client Client, elbMembers []HuaweiElbMembers, servers []*ecsMdl.ServerDetail) (err error) {
-	for _, member := range elbMembers {
+func DeleteServerFromElb(client Client, pools []HuaweiElbPool, servers []*ecsMdl.ServerDetail) (err error) {
+	for _, pool := range pools {
 		deleteMembersRequest := &elbMdl.BatchDeleteMembersRequest{Body: &elbMdl.BatchDeleteMembersRequestBody{Members: make([]elbMdl.BatchDeleteMembersOption, 0)}}
 		for _, server := range servers {
 			for _, addresses := range server.Addresses {
 				for _, address := range addresses {
 					if *address.OSEXTIPStype == ecsMdl.GetServerAddressOSEXTIPStypeEnum().FIXED {
-						deleteMembersRequest.PoolId = member.Id
+						deleteMembersRequest.PoolId = pool.Id
 						addr := address.Addr
-						deleteMember := elbMdl.BatchDeleteMembersOption{Address: &addr, ProtocolPort: &member.Port}
+						deleteMember := elbMdl.BatchDeleteMembersOption{Address: &addr, ProtocolPort: &pool.Port}
 						deleteMembersRequest.Body.Members = append(deleteMembersRequest.Body.Members, deleteMember)
 					}
 				}
@@ -175,4 +175,31 @@ func GetLoadBalancerShareType(shareType string) elbMdl.CreateLoadBalancerBandwid
 		shareTypeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionShareTypeEnum().PER
 	}
 	return shareTypeEnum
+}
+
+func DeleteElb(client Client, loadBalancerId string) error {
+	req := &elbMdl.DeleteLoadBalancerRequest{LoadbalancerId: loadBalancerId}
+	_, err := client.DeleteLoadBalancer(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteListener(client Client, listenerId string) error {
+	req := &elbMdl.DeleteListenerRequest{ListenerId: listenerId}
+	_, err := client.DeleteListener(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeletePool(client Client, poolId string) error {
+	req := &elbMdl.DeletePoolRequest{PoolId: poolId}
+	_, err := client.DeletePool(req)
+	if err != nil {
+		return err
+	}
+	return nil
 }

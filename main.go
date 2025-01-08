@@ -71,10 +71,10 @@ func main() {
 		return
 	}
 
-	elbMembers := make([]HuaweiElbMembers, 0)
-	elbMembers = append(elbMembers, HuaweiElbMembers{Id: pool80, Port: 80})
-	elbMembers = append(elbMembers, HuaweiElbMembers{Id: pool443, Port: 443})
-	err = AddServerToElb(client, subnetId, elbMembers, instance)
+	elbPools := make([]HuaweiElbPool, 0)
+	elbPools = append(elbPools, HuaweiElbPool{Id: pool80, Port: 80})
+	elbPools = append(elbPools, HuaweiElbPool{Id: pool443, Port: 443})
+	err = AddServerToElb(client, subnetId, elbPools, instance)
 	if err != nil {
 		log.Print(err)
 		return

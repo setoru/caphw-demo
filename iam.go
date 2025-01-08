@@ -35,7 +35,9 @@ type Client interface {
 	ShowVpc(request *vpcMdl.ShowVpcRequest) (*vpcMdl.ShowVpcResponse, error)
 	ListSecurityGroups(request *vpcMdl.ListSecurityGroupsRequest) (*vpcMdl.ListSecurityGroupsResponse, error)
 	CreateSecurityGroup(request *vpcMdl.CreateSecurityGroupRequest) (*vpcMdl.CreateSecurityGroupResponse, error)
+	DeleteSecurityGroup(request *vpcMdl.DeleteSecurityGroupRequest) (*vpcMdl.DeleteSecurityGroupResponse, error)
 	CreateSubnet(request *vpcMdl.CreateSubnetRequest) (*vpcMdl.CreateSubnetResponse, error)
+	DeleteSubnet(request *vpcMdl.DeleteSubnetRequest) (*vpcMdl.DeleteSubnetResponse, error)
 	//ELB
 	ShowLoadBalancer(request *elbMdl.ShowLoadBalancerRequest) (*elbMdl.ShowLoadBalancerResponse, error)
 	CreateLoadBalancer(request *elbMdl.CreateLoadBalancerRequest) (*elbMdl.CreateLoadBalancerResponse, error)
@@ -44,7 +46,9 @@ type Client interface {
 	BatchDeleteMembers(request *elbMdl.BatchDeleteMembersRequest) (*elbMdl.BatchDeleteMembersResponse, error)
 	ListAvailabilityZones(request *elbMdl.ListAvailabilityZonesRequest) (*elbMdl.ListAvailabilityZonesResponse, error)
 	CreateListener(request *elbMdl.CreateListenerRequest) (*elbMdl.CreateListenerResponse, error)
+	DeleteListener(request *elbMdl.DeleteListenerRequest) (*elbMdl.DeleteListenerResponse, error)
 	CreatePool(request *elbMdl.CreatePoolRequest) (*elbMdl.CreatePoolResponse, error)
+	DeletePool(request *elbMdl.DeletePoolRequest) (*elbMdl.DeletePoolResponse, error)
 	//IMS
 	ListImages(request *imsMdl.ListImagesRequest) (*imsMdl.ListImagesResponse, error)
 }
@@ -88,8 +92,16 @@ func (client *HuaweiCloudClient) CreateSecurityGroup(request *vpcMdl.CreateSecur
 	return client.VpcClient.CreateSecurityGroup(request)
 }
 
+func (client *HuaweiCloudClient) DeleteSecurityGroup(request *vpcMdl.DeleteSecurityGroupRequest) (*vpcMdl.DeleteSecurityGroupResponse, error) {
+	return client.VpcClient.DeleteSecurityGroup(request)
+}
+
 func (client *HuaweiCloudClient) CreateSubnet(request *vpcMdl.CreateSubnetRequest) (*vpcMdl.CreateSubnetResponse, error) {
 	return client.VpcClient.CreateSubnet(request)
+}
+
+func (client *HuaweiCloudClient) DeleteSubnet(request *vpcMdl.DeleteSubnetRequest) (*vpcMdl.DeleteSubnetResponse, error) {
+	return client.VpcClient.DeleteSubnet(request)
 }
 
 func (client *HuaweiCloudClient) ShowLoadBalancer(request *elbMdl.ShowLoadBalancerRequest) (*elbMdl.ShowLoadBalancerResponse, error) {
@@ -118,6 +130,14 @@ func (client HuaweiCloudClient) ListAvailabilityZones(request *elbMdl.ListAvaila
 
 func (client HuaweiCloudClient) CreateListener(request *elbMdl.CreateListenerRequest) (*elbMdl.CreateListenerResponse, error) {
 	return client.ElbClient.CreateListener(request)
+}
+
+func (client HuaweiCloudClient) DeleteListener(request *elbMdl.DeleteListenerRequest) (*elbMdl.DeleteListenerResponse, error) {
+	return client.ElbClient.DeleteListener(request)
+}
+
+func (client HuaweiCloudClient) DeletePool(request *elbMdl.DeletePoolRequest) (*elbMdl.DeletePoolResponse, error) {
+	return client.ElbClient.DeletePool(request)
 }
 
 func (client HuaweiCloudClient) CreatePool(request *elbMdl.CreatePoolRequest) (*elbMdl.CreatePoolResponse, error) {

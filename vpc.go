@@ -23,7 +23,7 @@ func CreateVpc(client Client, config *Config) (string, error) {
 }
 
 func CreateSecurityGroup(client Client, config *Config) ([]string, error) {
-	securityGroupIds, _ := getSecurityGroupIds(config)
+	securityGroupIds := getSecurityGroupIds(config)
 	for _, group := range config.SecurityGroups {
 		if group.Id != "" {
 			continue
@@ -41,11 +41,11 @@ func CreateSecurityGroup(client Client, config *Config) ([]string, error) {
 	return securityGroupIds, nil
 }
 
-func getSecurityGroupIds(config *Config) ([]string, error) {
-	var securityGroupIds []string
+func getSecurityGroupIds(config *Config) []string {
+	securityGroupIds := make([]string, 0)
 
 	if len(config.SecurityGroups) == 0 {
-		return []string{}, nil
+		return nil
 	}
 
 	for _, sg := range config.SecurityGroups {
@@ -54,7 +54,16 @@ func getSecurityGroupIds(config *Config) ([]string, error) {
 		}
 		securityGroupIds = append(securityGroupIds, sg.Id)
 	}
-	return securityGroupIds, nil
+	return securityGroupIds
+}
+
+func getSecurityGroupIdsSet(config *Config) map[string]struct{} {
+	ids := getSecurityGroupIds(config)
+	set := make(map[string]struct{})
+	for _, id := range ids {
+		set[id] = struct{}{}
+	}
+	return set
 }
 
 func CreateSubnet(client Client, config *Config, vpcId string) (string, string, error) {
@@ -72,4 +81,43 @@ func CreateSubnet(client Client, config *Config, vpcId string) (string, string, 
 	}
 	fmt.Println("create subnet success")
 	return response.Subnet.NeutronNetworkId, response.Subnet.NeutronSubnetId, nil
+}
+
+func DeleteVpc(client Client, config *Config, vpcId string) error {
+	if config.Vpc.Id != "" {
+		return nil
+	}
+	req := &model.DeleteVpcRequest{VpcId: vpcId}
+	_, err := client.DeleteVpc(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteSubnet(client Client, config *Config, networkId, vpcId string) error {
+	if config.Subnet.SubnetId != "" || config.Subnet.NetworkId != "" {
+		return nil
+	}
+	req := &model.DeleteSubnetRequest{SubnetId: networkId, VpcId: vpcId}
+	_, err := client.DeleteSubnet(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteSecurityGroup(client Client, config *Config, securityGroupIds []string) error {
+	set := getSecurityGroupIdsSet(config)
+	for _, id := range securityGroupIds {
+		if _, ok := set[id]; ok {
+			continue
+		}
+		req := &model.DeleteSecurityGroupRequest{SecurityGroupId: id}
+		_, err := client.DeleteSecurityGroup(req)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

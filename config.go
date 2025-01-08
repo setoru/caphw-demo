@@ -82,7 +82,7 @@ type HuaweiTag struct {
 	Value string `json:"value,omitempty"`
 }
 
-type HuaweiElbMembers struct {
+type HuaweiElbPool struct {
 	Id   string `json:"id,omitempty"`
 	Port int32  `json:"port,omitempty"`
 }
