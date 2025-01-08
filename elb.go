@@ -14,7 +14,7 @@ func AddServerToElb(client Client, subnetIpv4Id string, elbMembers []HuaweiElbMe
 			for _, addresses := range server.Addresses {
 				for _, address := range addresses {
 					if *address.OSEXTIPStype == ecsMdl.GetServerAddressOSEXTIPStypeEnum().FIXED {
-						createMembersRequest.PoolId = member.ID
+						createMembersRequest.PoolId = member.Id
 						createMember := elbMdl.BatchCreateMembersOption{Address: address.Addr, ProtocolPort: member.Port, SubnetCidrId: &subnetIpv4Id}
 						createMembersRequest.Body.Members = append(createMembersRequest.Body.Members, createMember)
 					}
@@ -36,7 +36,7 @@ func DeleteServerFromElb(client Client, elbMembers []HuaweiElbMembers, servers [
 			for _, addresses := range server.Addresses {
 				for _, address := range addresses {
 					if *address.OSEXTIPStype == ecsMdl.GetServerAddressOSEXTIPStypeEnum().FIXED {
-						deleteMembersRequest.PoolId = member.ID
+						deleteMembersRequest.PoolId = member.Id
 						addr := address.Addr
 						deleteMember := elbMdl.BatchDeleteMembersOption{Address: &addr, ProtocolPort: &member.Port}
 						deleteMembersRequest.Body.Members = append(deleteMembersRequest.Body.Members, deleteMember)
@@ -52,7 +52,7 @@ func DeleteServerFromElb(client Client, elbMembers []HuaweiElbMembers, servers [
 	return
 }
 
-func CreateELB(client Client, subnetId, vpcId string, config *Config) (string, error) {
+func CreateElb(client Client, subnetId, vpcId string, config *Config) (string, error) {
 	request := &elbMdl.CreateLoadBalancerRequest{}
 	nameBandwidth := fmt.Sprintf("eip-%s", GenerateRandomString(4))
 	chargeMode := GetLoadBalancerChargeMode(config.LoadBalancer.ChargingMode)
@@ -157,7 +157,7 @@ func GetLoadBalancerChargeMode(chargeMode string) elbMdl.CreateLoadBalancerBandw
 	case "traffic":
 		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().TRAFFIC
 	case "bandwidth":
-		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().BANDWIDTH
+		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().BANDWIdTH
 	default:
 		chargeModeEnum = elbMdl.GetCreateLoadBalancerBandwidthOptionChargeModeEnum().TRAFFIC
 	}

@@ -12,8 +12,8 @@ type Config struct {
 	Flavor               string                 `json:"flavor,omitempty"`
 	Vpc                  HuaweiVpc              `json:"vpc,omitempty"`
 	Subnet               Subnet                 `json:"subnet,omitempty"`
-	RegionID             string                 `json:"regionId,omitempty"`
-	ImageID              string                 `json:"imageId,omitempty"`
+	RegionId             string                 `json:"regionId,omitempty"`
+	ImageId              string                 `json:"imageId,omitempty"`
 	SecurityGroups       []SecurityGroup        `json:"securityGroups,omitempty"`
 	PublicIP             bool                   `json:"publicIp,omitempty"`
 	Tags                 []HuaweiTag            `json:"tags,omitempty"`
@@ -32,7 +32,7 @@ type RootVolumeProperties struct {
 	Size       int32  `json:"size,omitempty"`
 	Iops       int32  `json:"iops,omitempty"`
 	Throughput int32  `json:"throughput,omitempty"`
-	SnapshotID string `json:"snapshotId,omitempty"`
+	SnapshotId string `json:"snapshotId,omitempty"`
 }
 
 type Charging struct {
@@ -55,16 +55,16 @@ type DataVolumeProperties struct {
 	Size        int32  `json:"size,omitempty"`
 	Iops        int32  `json:"iops,omitempty"`
 	Throughput  int32  `json:"throughput,omitempty"`
-	SnapshotID  string `json:"snapshotId,omitempty"`
+	SnapshotId  string `json:"snapshotId,omitempty"`
 	Multiattach bool   `json:"multiattach,omitempty"`
 	Passthrough bool   `json:"passthrough,omitempty"`
-	ClusterID   string `json:"clusterId,omitempty"`
+	ClusterId   string `json:"clusterId,omitempty"`
 	ClusterType string `json:"clusterType,omitempty"`
 	DataImageId string `json:"dataImageId,omitempty"`
 }
 
 type SecurityGroup struct {
-	ID                  string  `json:"id,omitempty"`
+	Id                  string  `json:"id,omitempty"`
 	Name                string  `json:"name,omitempty"`
 	EnterpriseProjectId *string `json:"enterpriseProjectId,omitempty"`
 }
@@ -82,12 +82,12 @@ type HuaweiTag struct {
 }
 
 type HuaweiElbMembers struct {
-	ID   string `json:"id,omitempty"`
+	Id   string `json:"id,omitempty"`
 	Port int32  `json:"port,omitempty"`
 }
 
 type HuaweiVpc struct {
-	ID                  string  `json:"id,omitempty"`
+	Id                  string  `json:"id,omitempty"`
 	Name                string  `json:"name,omitempty"`
 	Cidr                string  `json:"cidr,omitempty"`
 	EnterpriseProjectId *string `json:"enterpriseProjectId,omitempty"`

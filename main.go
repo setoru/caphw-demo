@@ -1,8 +1,6 @@
 package main
 
-import (
-	"log"
-)
+import "log"
 
 func main() {
 	client, err := GetHuaweiClient()
@@ -37,14 +35,14 @@ func main() {
 	}
 
 	//create server
-	instance, err := CreateECS(client, config, vpcId, networkId, securityGroupIds)
+	instance, err := CreateEcs(client, config, vpcId, networkId, securityGroupIds)
 	if err != nil {
 		log.Print(err)
 		return
 	}
 
 	//create loadBalancer
-	elbId, err := CreateELB(client, subnetId, vpcId, config)
+	elbId, err := CreateElb(client, subnetId, vpcId, config)
 	if err != nil {
 		log.Print(err)
 		return
@@ -74,8 +72,8 @@ func main() {
 	}
 
 	elbMembers := make([]HuaweiElbMembers, 0)
-	elbMembers = append(elbMembers, HuaweiElbMembers{ID: pool80, Port: 80})
-	elbMembers = append(elbMembers, HuaweiElbMembers{ID: pool443, Port: 443})
+	elbMembers = append(elbMembers, HuaweiElbMembers{Id: pool80, Port: 80})
+	elbMembers = append(elbMembers, HuaweiElbMembers{Id: pool443, Port: 443})
 	err = AddServerToElb(client, subnetId, elbMembers, instance)
 	if err != nil {
 		log.Print(err)

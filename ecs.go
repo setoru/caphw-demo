@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	ecsMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
@@ -16,15 +17,15 @@ const (
 	ECSInstanceStatusRunning = "ACTIVE"
 )
 
-func CreateECS(client Client, config *Config, vpcId, networkId string, securityGroupIds []string) ([]*ecsMdl.ServerDetail, error) {
+func CreateEcs(client Client, config *Config, vpcId, networkId string, securityGroupIds []string) ([]*ecsMdl.ServerDetail, error) {
 	request := &ecsMdl.CreateServersRequest{Body: &ecsMdl.CreateServersRequestBody{Server: &ecsMdl.PrePaidServer{}}}
 	request.Body.Server.Name = config.ECSName
 
-	imageID, minDisk, err := GetImageIDAndDisk(config, client)
+	imageId, minDisk, err := GetImageIdAndDisk(config, client)
 	if err != nil {
 		return nil, err
 	}
-	request.Body.Server.ImageRef = imageID
+	request.Body.Server.ImageRef = imageId
 
 	request.Body.Server.FlavorRef = config.Flavor
 	request.Body.Server.Vpcid = vpcId
@@ -72,7 +73,7 @@ func CreateECS(client Client, config *Config, vpcId, networkId string, securityG
 
 	diskPrior := "true"
 	request.Body.Server.Extendparam.DiskPrior = &diskPrior
-	request.Body.Server.Extendparam.RegionID = &config.RegionID
+	request.Body.Server.Extendparam.RegionID = &config.RegionId
 
 	request.Body.Server.OsschedulerHints = getServerSchedulerHints(config)
 
@@ -181,7 +182,7 @@ func getRootVolumeProperties(minDisk int32, config *Config) *ecsMdl.PrePaidServe
 	if config.RootVolume.Size > minDisk {
 		rootVolume.Size = &config.RootVolume.Size
 	}
-	rootVolume.Extendparam = &ecsMdl.PrePaidServerRootVolumeExtendParam{SnapshotId: &config.RootVolume.SnapshotID}
+	rootVolume.Extendparam = &ecsMdl.PrePaidServerRootVolumeExtendParam{SnapshotId: &config.RootVolume.SnapshotId}
 	return &rootVolume
 }
 
@@ -219,10 +220,10 @@ func getDataVolumeProperties(minDisk int32, config *Config) *[]ecsMdl.PrePaidSer
 		} else {
 			dataVolume.Size = minDisk
 		}
-		dataVolume.Extendparam = &ecsMdl.PrePaidServerDataVolumeExtendParam{SnapshotId: &volume.SnapshotID}
+		dataVolume.Extendparam = &ecsMdl.PrePaidServerDataVolumeExtendParam{SnapshotId: &volume.SnapshotId}
 		dataVolume.DataImageId = &volume.DataImageId
-		if volume.ClusterID != "" {
-			dataVolume.ClusterId = &volume.ClusterID
+		if volume.ClusterId != "" {
+			dataVolume.ClusterId = &volume.ClusterId
 			clusterType := ecsMdl.GetPrePaidServerDataVolumeClusterTypeEnum().DSS
 			dataVolume.ClusterType = &clusterType
 		}
@@ -259,36 +260,25 @@ func waitForInstancesStatus(client Client, publicIP bool, instanceIds []string, 
 		timeout = InstanceDefaultTimeout
 	}
 	result, err := WaitForResult(fmt.Sprintf("Wait for the instances %v state to change to %s ", instanceIds, instanceStatus), func() (stop bool, result interface{}, err error) {
-		showServerRequest := ecsMdl.ListServersDetailsRequest{}
-		var serverIds string
-		for _, id := range instanceIds {
-			if serverIds == "" {
-				serverIds = id
-				continue
-			}
-			serverIds += ","
-			serverIds += id
-		}
-		showServerRequest.ServerId = &serverIds
-		listServersDetailsResponse, err := client.ListServersDetails(&showServerRequest)
+		instances, err := describeInstances(client, instanceIds)
 		if err != nil {
 			return false, nil, err
 		}
 
-		if len(*listServersDetailsResponse.Servers) <= 0 {
+		if len(instances) <= 0 {
 			return true, nil, fmt.Errorf("the instances %v not found. ", instanceIds)
 		}
 
 		idsLen := len(instanceIds)
-		servers := make([]*ecsMdl.ServerDetail, 0)
+		needInstances := make([]*ecsMdl.ServerDetail, 0)
 
-		for _, server := range *listServersDetailsResponse.Servers {
-			if server.Status == instanceStatus {
-				servers = append(servers, &server)
+		for _, instance := range instances {
+			if instance.Status == instanceStatus {
+				needInstances = append(needInstances, &instance)
 			}
 			if publicIP {
 				wait := true
-				for _, addresses := range server.Addresses {
+				for _, addresses := range instance.Addresses {
 					for _, address := range addresses {
 						if *address.OSEXTIPStype == ecsMdl.GetServerAddressOSEXTIPStypeEnum().FLOATING {
 							wait = false
@@ -301,8 +291,8 @@ func waitForInstancesStatus(client Client, publicIP bool, instanceIds []string, 
 			}
 		}
 
-		if len(servers) == idsLen {
-			return true, servers, nil
+		if len(needInstances) == idsLen {
+			return true, needInstances, nil
 		}
 
 		return false, nil, fmt.Errorf("the instances  %v state are not  the expected state  %s ", instanceIds, instanceStatus)
@@ -337,4 +327,78 @@ func WaitForResult(name string, predicate func() (bool, interface{}, error), ret
 			return nil, fmt.Errorf("wait for %s timeout", name)
 		}
 	}
+}
+
+func StopEcs(client Client, instanceIds []string) error {
+	request := ecsMdl.BatchStopServersRequest{Body: &ecsMdl.BatchStopServersRequestBody{OsStop: &ecsMdl.BatchStopServersOption{}}}
+	ids := make([]ecsMdl.ServerId, 0)
+	for _, instanceId := range instanceIds {
+		ids = append(ids, ecsMdl.ServerId{Id: instanceId})
+	}
+	request.Body.OsStop.Servers = ids
+	_, err := client.BatchStopServers(&request)
+	if err != nil {
+		return err
+	}
+	fmt.Println("stop ecs success")
+	return nil
+}
+
+func DeleteEcs(client Client, instanceIds []string) error {
+	request := ecsMdl.DeleteServersRequest{}
+	ids := make([]ecsMdl.ServerId, 0)
+	for _, instanceId := range instanceIds {
+		ids = append(ids, ecsMdl.ServerId{Id: instanceId})
+	}
+	deletePublicIp := true
+	deleteVolume := true
+	request.Body = &ecsMdl.DeleteServersRequestBody{
+		Servers:        ids,
+		DeletePublicip: &deletePublicIp,
+		DeleteVolume:   &deleteVolume,
+	}
+	_, err := client.DeleteServers(&request)
+	if err != nil {
+		return err
+	}
+	fmt.Println("stop ecs success")
+	return nil
+}
+
+func GetInstanceById(client Client, instanceId string) (*ecsMdl.ServerDetail, error) {
+	if instanceId == "" {
+		return nil, fmt.Errorf("instanceId not specified")
+	}
+	request := &ecsMdl.ShowServerRequest{}
+	request.ServerId = instanceId
+	response, err := client.ShowServer(request)
+	if err != nil {
+		return nil, err
+	}
+	return response.Server, nil
+}
+
+func GetExistingInstances(client Client, huaweiTag HuaweiTag) ([]ecsMdl.ServerDetail, error) {
+	request := ecsMdl.ListServersDetailsRequest{}
+	tag := fmt.Sprintf("%s,%s", huaweiTag.Name, huaweiTag.Value)
+	request.Tags = &tag
+	response, err := client.ListServersDetails(&request)
+	if err != nil {
+		return nil, err
+	}
+	return *response.Servers, nil
+}
+
+func describeInstances(client Client, instanceIds []string) ([]ecsMdl.ServerDetail, error) {
+	if len(instanceIds) < 1 {
+		return nil, fmt.Errorf("instance-ids not specified")
+	}
+	request := ecsMdl.ListServersDetailsRequest{}
+	serverIds := strings.Join(instanceIds, ",")
+	request.ServerId = &serverIds
+	response, err := client.ListServersDetails(&request)
+	if err != nil {
+		return nil, err
+	}
+	return *response.Servers, nil
 }

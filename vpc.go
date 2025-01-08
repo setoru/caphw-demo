@@ -7,8 +7,8 @@ import (
 )
 
 func CreateVpc(client Client, config *Config) (string, error) {
-	if config.Vpc.ID != "" {
-		return config.Vpc.ID, nil
+	if config.Vpc.Id != "" {
+		return config.Vpc.Id, nil
 	}
 	req := &model.CreateVpcRequest{Body: &model.CreateVpcRequestBody{Vpc: &model.CreateVpcOption{}}}
 	req.Body.Vpc.Name = &config.Vpc.Name
@@ -23,9 +23,9 @@ func CreateVpc(client Client, config *Config) (string, error) {
 }
 
 func CreateSecurityGroup(client Client, config *Config) ([]string, error) {
-	securityGroupIDs, _ := getSecurityGroupIDs(config)
+	securityGroupIds, _ := getSecurityGroupIds(config)
 	for _, group := range config.SecurityGroups {
-		if group.ID != "" {
+		if group.Id != "" {
 			continue
 		}
 		req := &model.CreateSecurityGroupRequest{Body: &model.CreateSecurityGroupRequestBody{SecurityGroup: &model.CreateSecurityGroupOption{}}}
@@ -35,26 +35,26 @@ func CreateSecurityGroup(client Client, config *Config) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		securityGroupIDs = append(securityGroupIDs, response.SecurityGroup.Id)
+		securityGroupIds = append(securityGroupIds, response.SecurityGroup.Id)
 	}
 	fmt.Println("create security group success")
-	return securityGroupIDs, nil
+	return securityGroupIds, nil
 }
 
-func getSecurityGroupIDs(config *Config) ([]string, error) {
-	var securityGroupIDs []string
+func getSecurityGroupIds(config *Config) ([]string, error) {
+	var securityGroupIds []string
 
 	if len(config.SecurityGroups) == 0 {
 		return []string{}, nil
 	}
 
 	for _, sg := range config.SecurityGroups {
-		if sg.ID == "" {
+		if sg.Id == "" {
 			continue
 		}
-		securityGroupIDs = append(securityGroupIDs, sg.ID)
+		securityGroupIds = append(securityGroupIds, sg.Id)
 	}
-	return securityGroupIDs, nil
+	return securityGroupIds, nil
 }
 
 func CreateSubnet(client Client, config *Config, vpcId string) (string, string, error) {
