@@ -3,6 +3,10 @@ flavor: "x1.4u.8g"
 regionId: "ap-southeast-1"
 imageId: "277449d5-5b48-4b14-93a6-638fc595a07e"
 publicIp: true
+publicIpSpec:
+  chargeMode: "traffic"
+  size: "100"
+  ipType: "5_bgp"
 vpc:
   name: "vpc-caphw"
   cidr: "192.168.0.0/16"

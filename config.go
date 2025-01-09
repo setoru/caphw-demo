@@ -104,7 +104,6 @@ type LoadBalancer struct {
 type PublicIP struct {
 	IpType     string `json:"ipType,omitempty"`
 	Size       int32  `json:"size,omitempty"`
-	Bandwidth  string `json:"bandwidth,omitempty"`
 	ShareType  string `json:"shareType,omitempty"`
 	ChargeMode string `json:"chargeMode,omitempty"`
 }

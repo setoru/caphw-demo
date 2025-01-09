@@ -35,6 +35,10 @@ func CreateSecurityGroup(client Client, config *Config) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+		err = deleteDefaultSecurityGroupRules(client, response.SecurityGroup.Id)
+		if err != nil {
+			return nil, err
+		}
 		securityGroupIds = append(securityGroupIds, response.SecurityGroup.Id)
 	}
 	fmt.Println("create security group success")
@@ -117,6 +121,24 @@ func DeleteSecurityGroup(client Client, config *Config, securityGroupIds []strin
 		_, err := client.DeleteSecurityGroup(req)
 		if err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func deleteDefaultSecurityGroupRules(client Client, securityGroupId string) error {
+	listReq := &model.ListSecurityGroupRulesRequest{SecurityGroupId: &securityGroupId}
+	listResponse, err := client.ListSecurityGroupRules(listReq)
+	if err != nil {
+		return err
+	}
+	for _, rule := range *listResponse.SecurityGroupRules {
+		if rule.Direction == "ingress" && rule.RemoteIpPrefix == "0.0.0.0/0" {
+			deleteReq := &model.DeleteSecurityGroupRuleRequest{SecurityGroupRuleId: rule.Id}
+			_, err = client.DeleteSecurityGroupRule(deleteReq)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

@@ -38,6 +38,8 @@ type Client interface {
 	DeleteSecurityGroup(request *vpcMdl.DeleteSecurityGroupRequest) (*vpcMdl.DeleteSecurityGroupResponse, error)
 	CreateSubnet(request *vpcMdl.CreateSubnetRequest) (*vpcMdl.CreateSubnetResponse, error)
 	DeleteSubnet(request *vpcMdl.DeleteSubnetRequest) (*vpcMdl.DeleteSubnetResponse, error)
+	ListSecurityGroupRules(request *vpcMdl.ListSecurityGroupRulesRequest) (*vpcMdl.ListSecurityGroupRulesResponse, error)
+	DeleteSecurityGroupRule(request *vpcMdl.DeleteSecurityGroupRuleRequest) (*vpcMdl.DeleteSecurityGroupRuleResponse, error)
 	//ELB
 	ShowLoadBalancer(request *elbMdl.ShowLoadBalancerRequest) (*elbMdl.ShowLoadBalancerResponse, error)
 	CreateLoadBalancer(request *elbMdl.CreateLoadBalancerRequest) (*elbMdl.CreateLoadBalancerResponse, error)
@@ -94,6 +96,14 @@ func (client *HuaweiCloudClient) CreateSecurityGroup(request *vpcMdl.CreateSecur
 
 func (client *HuaweiCloudClient) DeleteSecurityGroup(request *vpcMdl.DeleteSecurityGroupRequest) (*vpcMdl.DeleteSecurityGroupResponse, error) {
 	return client.VpcClient.DeleteSecurityGroup(request)
+}
+
+func (client *HuaweiCloudClient) DeleteSecurityGroupRule(request *vpcMdl.DeleteSecurityGroupRuleRequest) (*vpcMdl.DeleteSecurityGroupRuleResponse, error) {
+	return client.VpcClient.DeleteSecurityGroupRule(request)
+}
+
+func (client *HuaweiCloudClient) ListSecurityGroupRules(request *vpcMdl.ListSecurityGroupRulesRequest) (*vpcMdl.ListSecurityGroupRulesResponse, error) {
+	return client.VpcClient.ListSecurityGroupRules(request)
 }
 
 func (client *HuaweiCloudClient) CreateSubnet(request *vpcMdl.CreateSubnetRequest) (*vpcMdl.CreateSubnetResponse, error) {
