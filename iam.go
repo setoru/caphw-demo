@@ -9,10 +9,14 @@ import (
 	reg "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/region"
 	ecs "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2"
 	ecsMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
+	eip "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/eip/v2"
+	eipMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/eip/v2/model"
 	elb "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/elb/v3"
 	elbMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/elb/v3/model"
 	ims "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ims/v2"
 	imsMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ims/v2/model"
+	nat "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/nat/v2"
+	natMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/nat/v2/model"
 	vpc "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2"
 	vpcMdl "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/vpc/v2/model"
 )
@@ -53,6 +57,11 @@ type Client interface {
 	DeletePool(request *elbMdl.DeletePoolRequest) (*elbMdl.DeletePoolResponse, error)
 	//IMS
 	ListImages(request *imsMdl.ListImagesRequest) (*imsMdl.ListImagesResponse, error)
+	//NAT
+	CreateNatGateway(request *natMdl.CreateNatGatewayRequest) (*natMdl.CreateNatGatewayResponse, error)
+	CreateNatGatewaySnatRule(request *natMdl.CreateNatGatewaySnatRuleRequest) (*natMdl.CreateNatGatewaySnatRuleResponse, error)
+	//EIP
+	CreatePublicip(request *eipMdl.CreatePublicipRequest) (*eipMdl.CreatePublicipResponse, error)
 }
 
 type HuaweiCloudClient struct {
@@ -60,6 +69,8 @@ type HuaweiCloudClient struct {
 	VpcClient *vpc.VpcClient
 	ElbClient *elb.ElbClient
 	ImsClient *ims.ImsClient
+	NatClient *nat.NatClient
+	EipClient *eip.EipClient
 }
 
 func (client *HuaweiCloudClient) ShowServerBlockDevice(request *ecsMdl.ShowServerBlockDeviceRequest) (*ecsMdl.ShowServerBlockDeviceResponse, error) {
@@ -186,6 +197,18 @@ func (client *HuaweiCloudClient) ListFlavors(request *ecsMdl.ListFlavorsRequest)
 	return client.EcsClient.ListFlavors(request)
 }
 
+func (client *HuaweiCloudClient) CreateNatGateway(request *natMdl.CreateNatGatewayRequest) (*natMdl.CreateNatGatewayResponse, error) {
+	return client.NatClient.CreateNatGateway(request)
+}
+
+func (client *HuaweiCloudClient) CreateNatGatewaySnatRule(request *natMdl.CreateNatGatewaySnatRuleRequest) (*natMdl.CreateNatGatewaySnatRuleResponse, error) {
+	return client.NatClient.CreateNatGatewaySnatRule(request)
+}
+
+func (client *HuaweiCloudClient) CreatePublicip(request *eipMdl.CreatePublicipRequest) (*eipMdl.CreatePublicipResponse, error) {
+	return client.EipClient.CreatePublicip(request)
+}
+
 func GetHuaweiClient() (Client, error) {
 	ak := os.Getenv("access_key")
 	sk := os.Getenv("secret_key")
@@ -233,10 +256,33 @@ func GetHuaweiClient() (Client, error) {
 	}
 	imsClient := ims.NewImsClient(imsBuild)
 
+	natRegion := reg.NewRegion(region, fmt.Sprintf("https://nat.%s.myhuaweicloud.com", region))
+	natBuild, err := nat.NatClientBuilder().
+		WithRegion(natRegion).
+		WithCredential(credential).
+		WithHttpConfig(config.DefaultHttpConfig()).
+		SafeBuild()
+	if err != nil {
+		return nil, err
+	}
+	natClient := nat.NewNatClient(natBuild)
+
+	eipRegion := reg.NewRegion(region, fmt.Sprintf("https://eip.%s.myhuaweicloud.com", region))
+	eipBuild, err := eip.EipClientBuilder().
+		WithRegion(eipRegion).
+		WithCredential(credential).
+		WithHttpConfig(config.DefaultHttpConfig()).
+		SafeBuild()
+	if err != nil {
+		return nil, err
+	}
+	eipClient := eip.NewEipClient(eipBuild)
 	return &HuaweiCloudClient{
 		EcsClient: ecsClient,
 		VpcClient: vpcClient,
 		ElbClient: elbClient,
 		ImsClient: imsClient,
+		NatClient: natClient,
+		EipClient: eipClient,
 	}, nil
 }

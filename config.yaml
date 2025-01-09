@@ -6,7 +6,6 @@ publicIp: true
 publicIpSpec:
   chargeMode: "traffic"
   size: "100"
-  ipType: "5_bgp"
 vpc:
   name: "vpc-caphw"
   cidr: "192.168.0.0/16"
@@ -24,3 +23,7 @@ dataVolumes:
   - volumeType: "GPSSD"
 loadBalancer:
   size: 100
+nat:
+  publicIpSpec:
+    chargeMode: "traffic"
+    size: "100"

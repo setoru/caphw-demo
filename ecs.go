@@ -43,7 +43,7 @@ func CreateEcs(client Client, config *Config, vpcId, networkId string, securityG
 	if config.PublicIp {
 		publicIp := ecsMdl.PrePaidServerPublicip{}
 		publicIp.Eip = &ecsMdl.PrePaidServerEip{
-			Iptype: config.PublicIpSpec.IpType,
+			Iptype: getIpType(config.PublicIpSpec.IpType),
 			Bandwidth: &ecsMdl.PrePaidServerEipBandwidth{
 				Size:       &config.PublicIpSpec.Size,
 				Sharetype:  getPublicIpShareType(config.PublicIpSpec.ShareType),
@@ -417,4 +417,11 @@ func getPublicIpShareType(shareType string) ecsMdl.PrePaidServerEipBandwidthShar
 		shareTypeEnum = ecsMdl.GetPrePaidServerEipBandwidthSharetypeEnum().PER
 	}
 	return shareTypeEnum
+}
+
+func getIpType(ipType string) string {
+	if ipType == "" {
+		return "5_bgp"
+	}
+	return ipType
 }

@@ -79,4 +79,8 @@ func main() {
 		log.Print(err)
 		return
 	}
+	err = CreateNat(client, config, vpcId, networkId)
+	if err != nil {
+		return
+	}
 }

@@ -55,8 +55,8 @@ func DeleteServerFromElb(client Client, pools []HuaweiElbPool, servers []*ecsMdl
 func CreateElb(client Client, subnetId, vpcId string, config *Config) (string, error) {
 	request := &elbMdl.CreateLoadBalancerRequest{}
 	nameBandwidth := fmt.Sprintf("eip-%s", GenerateRandomString(4))
-	chargeMode := GetLoadBalancerChargeMode(config.LoadBalancer.ChargingMode)
-	shareType := GetLoadBalancerShareType(config.LoadBalancer.ShareType)
+	chargeMode := getLoadBalancerChargeMode(config.LoadBalancer.ChargingMode)
+	shareType := getLoadBalancerShareType(config.LoadBalancer.ShareType)
 	bandwidthPublicip := &elbMdl.CreateLoadBalancerBandwidthOption{
 		Name:       &nameBandwidth,
 		Size:       &config.LoadBalancer.Size,
@@ -151,7 +151,7 @@ func CreatePool(client Client, listenerId, vpcId string) (string, error) {
 	return response.Pool.Id, nil
 }
 
-func GetLoadBalancerChargeMode(chargeMode string) elbMdl.CreateLoadBalancerBandwidthOptionChargeMode {
+func getLoadBalancerChargeMode(chargeMode string) elbMdl.CreateLoadBalancerBandwidthOptionChargeMode {
 	var chargeModeEnum elbMdl.CreateLoadBalancerBandwidthOptionChargeMode
 	switch chargeMode {
 	case "traffic":
@@ -164,7 +164,7 @@ func GetLoadBalancerChargeMode(chargeMode string) elbMdl.CreateLoadBalancerBandw
 	return chargeModeEnum
 }
 
-func GetLoadBalancerShareType(shareType string) elbMdl.CreateLoadBalancerBandwidthOptionShareType {
+func getLoadBalancerShareType(shareType string) elbMdl.CreateLoadBalancerBandwidthOptionShareType {
 	var shareTypeEnum elbMdl.CreateLoadBalancerBandwidthOptionShareType
 	switch shareType {
 	case "per":
